@@ -1,21 +1,10 @@
 {
   "version": 2,
   "name": "everest-management",
-  "builds": [
+  "rewrites": [
     {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "server.js",
-      "headers": { "cache-control": "no-cache" }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/api/(.*)",
+      "destination": "/server.js"
     }
   ]
 }
