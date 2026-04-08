@@ -1,5 +1,5 @@
-const isDev = typeof window !== 'undefined' && window.location.port === '5173';
-const API_BASE_URL = isDev ? 'http://localhost:3000' : '';
+const isDev = typeof window !== 'undefined' && (window.location.port === '5173' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const API_BASE_URL = isDev ? 'http://localhost:3000' : (typeof window !== 'undefined' ? window.location.origin : '');
 
 async function request(endpoint, options = {}) {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
