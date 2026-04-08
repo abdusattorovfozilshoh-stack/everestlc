@@ -1,17 +1,37 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const isVercel = process.env.VERCEL === '1';
-const dbPath = isVercel 
-    ? path.join('/tmp', 'db.sqlite') 
-    : path.join(__dirname, '..', 'db.sqlite');
-const db = new sqlite3.Database(dbPath);
+let db;
 
-db.serialize(() => {
-    db.run('PRAGMA foreign_keys = ON');
+try {
+    const isVercel = process.env.VERCEL === '1';
+    const dbPath = isVercel 
+        ? path.join('/tmp', 'db.sqlite') 
+        : path.join(__dirname, '..', 'db.sqlite');
+    
+    db = new sqlite3.Database(dbPath, (err) => {
+        if (err) {
+            console.error('Baza ulanishda xatolik:', err.message);
+        } else {
+            console.log('Baza muvaffaqiyatli ulandi:', dbPath);
+        }
+    });
 
-    initDB();
-});
+    db.serialize(() => {
+        db.run('PRAGMA foreign_keys = ON');
+        initDB();
+    });
+} catch (error) {
+    console.error('CRITICAL: Baza yuklanishda jiddiy xatolik:', error);
+    // Vercel crash bo'lmasligi uchun dummy object qaytarishimiz mumkin
+    db = {
+        get: (q, p, cb) => cb ? cb(new Error("Baza mavjud emas")) : (typeof p === 'function' && p(new Error("Baza mavjud emas"))),
+        run: (q, p, cb) => cb ? cb(new Error("Baza mavjud emas")) : (typeof p === 'function' && p(new Error("Baza mavjud emas"))),
+        all: (q, p, cb) => cb ? cb(new Error("Baza mavjud emas")) : (typeof p === 'function' && p(new Error("Baza mavjud emas"))),
+        serialize: (cb) => cb(),
+        prepare: () => ({ run: () => {}, finalize: () => {} })
+    };
+}
 
 const DEFAULT_TEACHERS = [
     { ism: 'Aziza', fam: 'Karimova', tel: '+998901234567', login: 'aziza', pass: 'aziza123' },
